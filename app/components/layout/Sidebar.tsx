@@ -1,3 +1,4 @@
+// app/components/layout/Sidebar.tsx (新規作成)
 'use client'
 
 import { Zap, PieChart, Network, Users, User, LogOut } from 'lucide-react'
@@ -15,50 +16,57 @@ const boards = [
   { id: 'personal', name: 'マイボード (現場)', icon: User },
 ]
 
-export default function Sidebar({ currentBoard, setCurrentBoard }: { currentBoard: string, setCurrentBoard: (b: string) => void }) {
+type SidebarProps = {
+  currentBoard: string
+  setCurrentBoard: (boardId: string) => void
+}
+
+export default function Sidebar({ currentBoard, setCurrentBoard }: SidebarProps) {
   return (
-    // w-[240px] で幅を完全固定し、h-screen で縦幅を画面いっぱいに強制します
-    <aside className="w-[240px] bg-[#fbfbfa] border-r border-slate-200 flex flex-col shrink-0 z-50 h-screen">
+    // bg-[#fbfbfa] でNotionの左メニュー色を再現
+    <aside className="w-16 lg:w-56 bg-[#fbfbfa] border-r border-slate-200 flex flex-col shrink-0 z-40 relative shadow-sm h-screen">
       
-      {/* ワークスペース名 */}
-      <div className="h-14 flex items-center px-4 mt-2 mx-2 hover:bg-slate-200/50 rounded-lg cursor-pointer transition-colors">
-        <div className="w-6 h-6 bg-[#0f172a] text-white rounded flex items-center justify-center font-black shadow-sm">
-          <Zap size={12} />
+      {/* ワークスペースロゴ (完全移植) */}
+      <div className="h-16 flex items-center justify-center lg:justify-start lg:px-6 border-b border-slate-200">
+        <div className="w-8 h-8 bg-[#0f172a] text-white rounded flex items-center justify-center font-black shrink-0">
+          <Zap size={16} />
         </div>
-        <span className="ml-2.5 font-bold text-[14px] text-[#0f172a] tracking-tight">
+        <span className="ml-3 font-black text-lg hidden lg:block tracking-tight text-[#0f172a]">
           OS.Alignment
         </span>
       </div>
 
-      {/* ナビゲーション */}
-      <nav className="mt-6 flex flex-col gap-1 px-3 flex-grow">
-        <p className="px-2 text-[11px] font-bold text-slate-400 mb-1">Workspace</p>
+      {/* ナビゲーションメニュー (完全移植) */}
+      <nav className="mt-8 flex flex-col gap-1 px-3 flex-grow overflow-y-auto custom-scroll">
+        <p className="px-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest hidden lg:block mb-2">Workspace</p>
         
         {boards.map((board) => {
           const isActive = currentBoard === board.id
           const Icon = board.icon
+          
           return (
             <button
               key={board.id}
               onClick={() => setCurrentBoard(board.id)}
-              className={`flex items-center gap-3 px-3 py-2 rounded-md font-medium text-[13px] transition-all group ${
+              // ホバー時の質感（transition-colorsと透明度グレー）を適用
+              className={`flex items-center gap-3.5 px-3 py-2.5 rounded-lg font-bold text-[13px] transition-all group ${
                 isActive 
-                  ? 'bg-slate-200/60 text-[#0f172a]' 
+                  ? 'bg-slate-200/60 text-[#0f172a] border border-slate-200 shadow-sm' 
                   : 'text-slate-500 hover:bg-slate-200/40 hover:text-[#0f172a]'
               }`}
             >
-              <Icon size={16} className={isActive ? 'text-[#0f172a]' : 'text-slate-400 group-hover:text-slate-600'} />
-              <span>{board.name}</span>
+              <Icon size={18} className={`w-5 text-center ${isActive ? 'text-[#0f172a]' : 'text-slate-400 group-hover:text-slate-600'}`} />
+              <span className="hidden lg:block">{board.name}</span>
             </button>
           )
         })}
       </nav>
 
-      {/* フッター */}
-      <div className="p-4 border-t border-slate-200/60">
+      {/* フッター（ユーザーエリア / ログアウト） (完全移植) */}
+      <div className="p-3 border-t border-slate-200/60">
         <button 
           onClick={() => supabase.auth.signOut().then(() => window.location.reload())}
-          className="w-full flex items-center gap-2 px-3 py-2 rounded-md text-[13px] font-medium text-slate-500 hover:bg-slate-200/40 hover:text-[#0f172a] transition-colors"
+          className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-[13px] font-medium text-slate-500 hover:bg-slate-100 hover:text-slate-800 transition-colors"
         >
           <LogOut size={16} className="text-slate-400" />
           <span>ログアウト</span>
