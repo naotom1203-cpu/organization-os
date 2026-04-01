@@ -2,91 +2,143 @@
 
 import { createClient } from '@supabase/supabase-js'
 import { useState, useEffect } from 'react'
+import { 
+  LayoutDashboard, Settings, Plus, Play, CheckCircle, 
+  MessageSquare,Zap, LogOut, GripVertical, Maximize2, Minimize2, Trash2 
+} from 'lucide-react'
 
-export default function Home() {
+// --- Supabase設定 ---
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+)
+
+export default function OrganizationOS() {
   const [user, setUser] = useState<any>(null)
   const [company, setCompany] = useState<any>(null)
+  const [isEditMode, setIsEditMode] = useState(false)
   const [loading, setLoading] = useState(true)
-
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
+  
+  // GASのプロトタイプから引き継いだレイアウト状態
+  const [layout, setLayout] = useState([
+    { id: 'widget-sdt', title: '推計 SDTスコア', cols: 6 },
+    { id: 'widget-pipeline', title: 'PDCAパイプライン', cols: 12 },
+  ])
 
   useEffect(() => {
-    async function loadData() {
-      // 1. ログイン状態の確認
+    async function init() {
       const { data: { user } } = await supabase.auth.getUser()
       setUser(user)
-
       if (user) {
-        // 2. 名簿（profiles）から会社IDを取得
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('company_id')
-          .eq('id', user.id)
-          .single()
-
+        const { data: profile } = await supabase.from('profiles').select('company_id').eq('id', user.id).single()
         if (profile) {
-          // 3. 会社情報を取得（ここがRLSで守られている！）
-          const { data: companyData } = await supabase
-            .from('companies')
-            .select('*')
-            .eq('id', profile.company_id)
-            .single()
-          
+          const { data: companyData } = await supabase.from('companies').select('*').eq('id', profile.company_id).single()
           setCompany(companyData)
         }
       }
       setLoading(false)
     }
-    loadData()
+    init()
   }, [])
 
-  // ログイン処理
-  const handleLogin = async () => {
-    const email = window.prompt('メールアドレス')
-    const password = window.prompt('パスワード')
-    if (email && password) {
-      const { error } = await supabase.auth.signInWithPassword({ email, password })
-      if (error) alert('ログイン失敗: ' + error.message)
-      else window.location.reload()
-    }
-  }
-
-  if (loading) return <div style={{ padding: '40px' }}>🔐 セキュリティ確認中...</div>
+  if (loading) return <div className="p-10 text-center font-bold">OS.Alignment 起動中...</div>
 
   return (
-    <div style={{ padding: '40px', fontFamily: 'sans-serif', textAlign: 'center' }}>
-      <h1>組織OS ダッシュボード</h1>
+    <div className="flex h-screen bg-slate-50 font-sans text-slate-900 overflow-hidden">
+      {/* --- サイドバー --- */}
+      <aside className="w-16 lg:w-60 bg-white border-r border-slate-200 flex flex-col shrink-0 z-40">
+        <div className="h-16 flex items-center px-6 border-b border-slate-200">
+          <div className="w-8 h-8 bg-slate-900 text-white rounded flex items-center justify-center font-black">
+            <Zap size={18} />
+          </div>
+          <span className="ml-3 font-black text-lg hidden lg:block tracking-tight">OS.Alignment</span>
+        </div>
+        <nav className="mt-8 flex flex-col gap-2 px-3">
+          <button className="flex items-center gap-3 px-3 py-3 rounded-lg bg-slate-100 text-slate-900 border border-slate-200 font-bold text-sm">
+            <LayoutDashboard size={20} />
+            <span className="hidden lg:block">マイボード</span>
+          </button>
+        </nav>
+      </aside>
 
-      {user ? (
-        <div style={{ marginTop: '20px' }}>
-          <p style={{ color: '#666' }}>✅ ログイン：{user.email}</p>
-          
-          {company ? (
-            <div style={{ padding: '30px', backgroundColor: '#f0f7ff', borderRadius: '15px', border: '2px solid #0070f3', marginTop: '20px' }}>
-              <h2 style={{ color: '#0070f3', marginTop: 0 }}>認証成功</h2>
-              <p style={{ fontSize: '1.4rem' }}>ビルド中の組織：<strong>{company.name}</strong></p>
-            </div>
-          ) : (
-            <div style={{ padding: '20px', backgroundColor: '#fffbe6', border: '1px solid #ffe58f', borderRadius: '10px', marginTop: '20px' }}>
-              <p>⚠️ 会社との紐付けがまだ有効ではありません。</p>
-              <p>Supabaseの profiles にデータがあるか確認してください。</p>
-            </div>
-          )}
-          
-          <button onClick={() => supabase.auth.signOut().then(() => window.location.reload())} style={{ marginTop: '30px', padding: '10px 20px', cursor: 'pointer' }}>
-            ログアウト
-          </button>
-        </div>
-      ) : (
-        <div style={{ marginTop: '40px', padding: '40px', border: '1px solid #eee', borderRadius: '20px' }}>
-          <p>🔑 セキュリティ保護されたエリアです</p>
-          <button onClick={handleLogin} style={{ padding: '15px 30px', fontSize: '1.1rem', backgroundColor: '#0070f3', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer' }}>
-            ログインして開始
-          </button>
-        </div>
+      {/* --- メインコンテンツ --- */}
+      <div className="flex-grow flex flex-col h-screen overflow-hidden relative">
+        <header className="h-16 flex items-center justify-between px-8 bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-30">
+          <div className="font-bold text-lg">
+            {company ? company.name : '組織を選択してください'}
+          </div>
+          <div className="flex items-center gap-4">
+            <button 
+              onClick={() => setIsEditMode(!isEditMode)}
+              className={`px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 border ${
+                isEditMode ? 'bg-teal-50 text-teal-700 border-teal-200' : 'bg-white text-slate-700 border-slate-200 shadow-sm'
+              }`}
+            >
+              <Settings size={14} className={isEditMode ? 'animate-spin' : ''} />
+              {isEditMode ? 'レイアウトを保存' : 'UIをカスタマイズ'}
+            </button>
+            <button onClick={() => supabase.auth.signOut().then(() => window.location.reload())} className="text-slate-400 hover:text-rose-500 transition-colors">
+              <LogOut size={20} />
+            </button>
+          </div>
+        </header>
+
+        <main className="flex-grow overflow-y-auto p-8 custom-scroll">
+          <div className={`grid grid-cols-12 gap-6 max-w-[1400px] mx-auto ${isEditMode ? 'p-4 border-2 border-dashed border-slate-300 rounded-2xl bg-slate-100/50' : ''}`}>
+            {layout.map((widget) => (
+              <div 
+                key={widget.id} 
+                className={`col-span-12 md:col-span-${widget.cols} bg-white border border-slate-200 rounded-xl shadow-sm relative min-h-[200px] flex flex-col group transition-all ${
+                  isEditMode ? 'ring-2 ring-blue-500 ring-offset-2 scale-[0.98]' : ''
+                }`}
+              >
+                {/* 編集モード限定のオーバーレイ */}
+                {isEditMode && (
+                  <div className="absolute inset-0 bg-blue-50/80 backdrop-blur-[2px] z-10 rounded-xl flex flex-col items-center justify-center gap-4">
+                    <div className="bg-white px-4 py-2 rounded-lg shadow-md border border-blue-200 flex items-center gap-2 font-bold text-blue-600 cursor-grab active:cursor-grabbing">
+                      <GripVertical size={16} />
+                      {widget.title}
+                    </div>
+                    <div className="flex gap-2">
+                      <button className="p-2 bg-white rounded-lg border border-slate-200 hover:bg-slate-50 shadow-sm"><Minimize2 size={16}/></button>
+                      <button className="p-2 bg-white rounded-lg border border-slate-200 hover:bg-slate-50 shadow-sm"><Maximize2 size={16}/></button>
+                      <button className="p-2 bg-rose-50 text-rose-600 rounded-lg border border-rose-200 hover:bg-rose-100 shadow-sm ml-2"><Trash2 size={16}/></button>
+                    </div>
+                  </div>
+                )}
+
+                {/* ウィジェットの中身（GASのプロトタイプから移植） */}
+                <div className="p-6">
+                  <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-4">{widget.title}</h3>
+                  {widget.id === 'widget-sdt' && (
+                    <div className="flex items-end gap-2">
+                      <span className="text-4xl font-black text-slate-900">3.5</span>
+                      <span className="text-sm text-slate-400 mb-1">/ 5.0</span>
+                    </div>
+                  )}
+                  {widget.id === 'widget-pipeline' && (
+                    <div className="space-y-4">
+                      <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center"><Play size={14} fill="currentColor"/></div>
+                          <span className="font-bold text-sm">トークBの検証 (架電20件)</span>
+                        </div>
+                        <button className="text-slate-300 hover:text-teal-500"><CheckCircle size={20}/></button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </main>
+      </div>
+
+      {/* --- アクション追加FAB --- */}
+      {!isEditMode && (
+        <button className="fixed bottom-8 right-8 w-14 h-14 bg-slate-900 text-white rounded-full shadow-2xl flex items-center justify-center hover:scale-110 transition-transform z-50">
+          <Plus size={24} strokeWidth={3} />
+        </button>
       )}
     </div>
   )
