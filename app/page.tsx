@@ -1,40 +1,48 @@
+// app/page.tsx (丸ごと上書き)
 'use client'
 
 import { useState } from 'react'
 
-// コンポーネントのインポート
-import AppStyles from './components/layout/AppStyles' // ★新しく作ったデザイン設定
+// 切り分けたコンポーネントをインポート
 import Sidebar from './components/layout/Sidebar'
 import Header from './components/layout/Header'
 import PersonalBoard from './components/boards/PersonalBoard'
-import ManagerBoard from './components/boards/ManagerBoard'
+import ManagerBoard from './components/boards/ManagerBoard' // 追加
 
 export default function OrganizationOS() {
+  // 画面切り替えの状態管理
   const [currentBoard, setCurrentBoard] = useState('personal')
   const [isEditMode, setIsEditMode] = useState(false)
 
   return (
-    <>
-      <AppStyles /> {/* ★設定ファイルをここで1行で読み込む */}
+    // bg-[#f8fafc] でNotionのメインエリア色を再現
+    <div className="flex h-screen overflow-hidden bg-[#f8fafc]">
       
-      <div className="flex h-screen overflow-hidden bg-[#f8fafc]">
-        <Sidebar currentBoard={currentBoard} setCurrentBoard={setCurrentBoard} />
+      {/* 1. 分割したサイドバーを配置 */}
+      <Sidebar currentBoard={currentBoard} setCurrentBoard={setCurrentBoard} />
 
-        <div className="flex-grow flex flex-col h-screen relative">
-          <Header isEditMode={isEditMode} setIsEditMode={setIsEditMode} />
+      {/* 2. 右側のメインコンテンツエリア */}
+      <div className="flex-grow flex flex-col h-screen relative">
+        
+        {/* 3. 分割したヘッダーを配置 */}
+        <Header isEditMode={isEditMode} setIsEditMode={setIsEditMode} />
 
-          <main className="flex-grow overflow-y-auto custom-scroll relative">
-            {currentBoard === 'personal' && <PersonalBoard />}
-            {currentBoard === 'manager' && <ManagerBoard />}
-            
-            {currentBoard !== 'personal' && currentBoard !== 'manager' && (
-              <div className="p-10 text-center text-[#64748b]">
-                ここに {currentBoard} の画面が入ります。
-              </div>
-            )}
-          </main>
-        </div>
+        {/* 4. ダッシュボードコンテンツ (ボードごとの出し分け) */}
+        {/* レンダリングエンジンを overflow-hidden にして、各ボード側でスクロールさせます */}
+        <main className={`flex-grow overflow-hidden relative ${isEditMode ? 'is-editing' : ''}`}>
+          
+          {currentBoard === 'personal' && <PersonalBoard />}
+          {currentBoard === 'manager' && <ManagerBoard />}
+
+          {/* 他のボードはまだ空白 (モック) */}
+          {currentBoard !== 'personal' && currentBoard !== 'manager' && (
+            <div className="p-10 text-slate-500 text-sm text-center">
+              ここに {currentBoard} のコンポーネントを配置します。
+            </div>
+          )}
+
+        </main>
       </div>
-    </>
+    </div>
   )
 }
