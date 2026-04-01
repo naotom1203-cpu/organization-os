@@ -4,8 +4,7 @@ import { createClient } from '@supabase/supabase-js'
 import { useState, useEffect } from 'react'
 
 export default function Home() {
-  const [debugInfo, setDebugInfo] = useState<any>({})
-  const [loading, setLoading] = useState(true)
+  const [status, setStatus] = useState('診断開始...')
 
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -13,48 +12,36 @@ export default function Home() {
   )
 
   useEffect(() => {
-    async function checkEverything() {
-      const { data: { user } } = await supabase.auth.getUser()
-      const info: any = { userEmail: user?.email, userId: user?.id }
-
-      if (user) {
-        // プロフィール取得テスト
-        const { data: profile, error: pError } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', user.id)
-        
-        info.profileData = profile
-        info.profileError = pError?.message
-
-        if (profile && profile.length > 0) {
-          const companyId = profile[0].company_id
-          info.targetCompanyId = companyId
-
-          // 会社取得テスト
-          const { data: company, error: cError } = await supabase
-            .from('companies')
-            .select('*')
-            .eq('id', companyId)
-          
-          info.companyData = company
-          info.companyError = cError?.message
-        }
+    async function check() {
+      // 1. そもそもログインしているか？
+      const { data: { user }, error: authError } = await supabase.auth.getUser()
+      if (authError) {
+        setStatus('❌ ログインチェックでエラー: ' + authError.message)
+        return
       }
-      setDebugInfo(info)
-      setLoading(false)
+      if (!user) {
+        setStatus('🔑 ログインしていません（セッション切れ）')
+        return
+      }
+
+      // 2. ログインしているなら、そのIDを出す
+      setStatus('✅ ログイン中！ あなたのIDは: ' + user.id)
     }
-    checkEverything()
+    check()
   }, [])
 
-  if (loading) return <div style={{ padding: '40px' }}>診断中...</div>
-
   return (
-    <div style={{ padding: '20px', fontFamily: 'monospace', fontSize: '12px', backgroundColor: '#eee' }}>
-      <h1>🛠 最終診断モード</h1>
-      <pre>{JSON.stringify(debugInfo, null, 2)}</pre>
+    <div style={{ padding: '40px', fontSize: '20px', fontWeight: 'bold' }}>
+      診断結果：{status}
       <hr />
-      <button onClick={() => supabase.auth.signOut().then(() => window.location.reload())}>ログアウトしてやり直す</button>
+      <button onClick={() => {
+        const email = window.prompt('メアド')
+        const pass = window.prompt('パス')
+        supabase.auth.signInWithPassword({email: email!, password: pass!})
+          .then(() => window.location.reload())
+      }}>
+        再ログインを試す
+      </button>
     </div>
   )
 }
