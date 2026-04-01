@@ -1,67 +1,96 @@
 'use client'
 
 import { useState } from 'react'
-import { Plus, Check, ChevronDown, ChevronRight, FlaskConical } from 'lucide-react'
+import { Plus, Check, MoreHorizontal, FlaskConical } from 'lucide-react'
 
 export default function PipelineWidget() {
   const [pipelineTab, setPipelineTab] = useState('todo')
 
   return (
-    <div className="col-span-12 bg-[#ffffff] border border-[#e2e8f0] rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] flex flex-col min-h-[400px]">
-      <div className="flex justify-between items-center px-4 border-b border-[#e2e8f0] bg-slate-50 rounded-t-xl">
-        <div className="flex items-center">
-          <h3 className="text-[14px] font-black text-[#0f172a] mr-6 ml-2">Action Timeline</h3>
-          <button onClick={() => setPipelineTab('todo')} className={`py-4 px-6 text-[13px] font-bold border-b-2 transition-colors ${pipelineTab === 'todo' ? 'border-[#2563eb] text-[#2563eb]' : 'border-transparent text-[#64748b] hover:text-[#0f172a]'}`}>
-            実行中 (Do)
-          </button>
-          <button onClick={() => setPipelineTab('done')} className={`py-4 px-6 text-[13px] font-bold border-b-2 transition-colors ${pipelineTab === 'done' ? 'border-[#0d9488] text-[#0d9488]' : 'border-transparent text-[#64748b] hover:text-[#0f172a]'}`}>
-            完了 / 振り返り
-          </button>
+    <div className="col-span-12 bg-white border border-slate-200 rounded-xl shadow-sm flex flex-col min-h-[400px]">
+      
+      {/* ヘッダータブ */}
+      <div className="flex justify-between items-center px-6 border-b border-slate-100 bg-slate-50/50 rounded-t-xl">
+        <div className="flex items-center gap-6">
+          <h3 className="text-[14px] font-black text-[#0f172a]">Action Timeline</h3>
+          <div className="flex gap-4">
+            <button onClick={() => setPipelineTab('todo')} className={`py-4 text-[13px] font-bold border-b-2 transition-colors ${pipelineTab === 'todo' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-[#0f172a]'}`}>
+              実行中 (Do)
+            </button>
+            <button onClick={() => setPipelineTab('done')} className={`py-4 text-[13px] font-bold border-b-2 transition-colors ${pipelineTab === 'done' ? 'border-teal-600 text-teal-600' : 'border-transparent text-slate-500 hover:text-[#0f172a]'}`}>
+              完了 / 振り返り
+            </button>
+          </div>
         </div>
-        <button className="bg-[#0f172a] hover:bg-slate-700 text-white px-4 py-2 rounded-lg text-xs font-bold transition-all shadow-sm flex items-center">
-          <Plus size={14} className="mr-1.5" /> 追加
+        <button className="bg-[#0f172a] hover:bg-slate-800 text-white px-3 py-1.5 rounded-md text-xs font-bold transition-all shadow-sm flex items-center gap-1.5">
+          <Plus size={14} /> 追加
         </button>
       </div>
 
-      <div className="flex-grow p-6 bg-slate-50 flex flex-col gap-4 rounded-b-xl custom-scroll">
-        <div className="bg-white border border-[#e2e8f0] rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow relative cursor-pointer">
-          <div className="flex items-center gap-3 pr-8 ml-2">
-            <button className="w-5 h-5 rounded border-2 border-[#e2e8f0] flex items-center justify-center text-white hover:border-[#2563eb] hover:bg-blue-50 transition-colors z-10">
-              <Check size={12} className="opacity-0 hover:opacity-100 text-[#2563eb]" />
+      {/* コンテンツエリア */}
+      <div className="flex-grow p-6 bg-slate-50/30 flex flex-col gap-4 overflow-y-auto custom-scroll">
+        
+        {/* PDCAアクションカード */}
+        <div className="bg-white border border-slate-200 rounded-lg p-5 shadow-sm hover:shadow-md transition-shadow relative group">
+          
+          <div className="flex items-start justify-between">
+            <div className="flex items-center gap-3">
+              <span className="text-[10px] font-bold px-2 py-1 rounded bg-orange-50 border border-orange-100 text-orange-600 flex items-center gap-1">
+                <FlaskConical size={12} /> 業務探索
+              </span>
+              <h4 className="text-[14px] font-bold text-[#0f172a]">トークBの検証 (架電20件)</h4>
+            </div>
+            <button className="text-slate-400 hover:text-slate-600 opacity-0 group-hover:opacity-100 transition-opacity">
+              <MoreHorizontal size={18} />
             </button>
-            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-orange-50 border border-orange-200 text-[#d97706] flex items-center">
-              <FlaskConical size={10} className="mr-1" /> 業務 探索
-            </span>
-            <span className="text-[14px] font-bold text-[#0f172a] flex-grow">トークBの検証 (架電20件)</span>
-            <button className="text-[#64748b] hover:text-[#0f172a] px-2"><ChevronDown size={16} /></button>
           </div>
 
-          <div className="pl-7 mt-3">
-            <div className="bg-slate-100 rounded-lg p-3 text-[12px]">
-              <span className="font-bold text-[#64748b] block mb-1">【Plan (目的・仮説)】</span>
-              <p className="text-[#0f172a] whitespace-pre-wrap">質問から入るトークで接続率10%を目指す</p>
+          <div className="mt-3 bg-slate-50 p-3 rounded-md border border-slate-100">
+            <p className="text-[12px] text-slate-600 font-medium"><span className="font-bold text-slate-400 mr-2">Plan</span>質問から入るトークで接続率10%を目指す</p>
+          </div>
+
+          {/* 視覚的なPDCAステッパー */}
+          <div className="mt-6 px-2 relative">
+            {/* 背景の繋ぎ線 */}
+            <div className="absolute left-6 right-6 top-3 h-[2px] bg-slate-100 -z-10"></div>
+            {/* 進行状況の線 (Doまで青く塗る) */}
+            <div className="absolute left-6 w-1/3 top-3 h-[2px] bg-blue-500 -z-10 transition-all"></div>
+
+            <div className="flex justify-between">
+              {/* Step 1: Plan (完了済) */}
+              <div className="flex flex-col items-center gap-2 bg-white px-2">
+                <div className="w-6 h-6 rounded-full bg-blue-500 text-white flex items-center justify-center shadow-sm">
+                  <Check size={12} strokeWidth={3} />
+                </div>
+                <span className="text-[10px] font-bold text-slate-500">Plan</span>
+              </div>
+
+              {/* Step 2: Do (現在位置) */}
+              <div className="flex flex-col items-center gap-2 bg-white px-2">
+                <div className="w-6 h-6 rounded-full border-2 border-blue-500 bg-blue-50 flex items-center justify-center">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                </div>
+                <span className="text-[10px] font-bold text-blue-600">Do</span>
+              </div>
+
+              {/* Step 3: Check (未完了) */}
+              <div className="flex flex-col items-center gap-2 bg-white px-2">
+                <div className="w-6 h-6 rounded-full border-2 border-slate-200 bg-white flex items-center justify-center">
+                  <span className="text-[10px] font-bold text-slate-400">3</span>
+                </div>
+                <span className="text-[10px] font-bold text-slate-400">Check</span>
+              </div>
+
+              {/* Step 4: Act (未完了) */}
+              <div className="flex flex-col items-center gap-2 bg-white px-2">
+                <div className="w-6 h-6 rounded-full border-2 border-slate-200 bg-white flex items-center justify-center">
+                  <span className="text-[10px] font-bold text-slate-400">4</span>
+                </div>
+                <span className="text-[10px] font-bold text-slate-400">Act</span>
+              </div>
             </div>
           </div>
 
-          <div className="flex items-stretch text-[11px] mt-4 ml-2 bg-slate-50 rounded-lg border border-[#e2e8f0] overflow-hidden">
-            <div className="flex-1 p-3 border-r border-[#e2e8f0]">
-              <span className="font-bold text-[#64748b] block mb-1">Plan</span>
-              質問から入るトークで...
-            </div>
-            <div className="flex-none flex items-center justify-center px-2 text-slate-300"><ChevronRight size={14} /></div>
-            <div className="flex-1 p-3 border-r border-[#e2e8f0]">
-              <span className="font-bold text-[#2563eb] block mb-1">Do</span>
-              トークBの検証 (架電20件)
-            </div>
-            <div className="flex-none flex items-center justify-center px-2 text-slate-300"><ChevronRight size={14} /></div>
-            <div className="flex-1 p-3 border-r border-[#e2e8f0] opacity-40">
-              <span className="font-bold text-[#d97706] block mb-1">Check</span>未検証
-            </div>
-            <div className="flex-none flex items-center justify-center px-2 text-slate-300"><ChevronRight size={14} /></div>
-            <div className="flex-1 p-3 opacity-40">
-              <span className="font-bold text-[#7c3aed] block mb-1">Act</span>未決裁
-            </div>
-          </div>
         </div>
       </div>
     </div>
